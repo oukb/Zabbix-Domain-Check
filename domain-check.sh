@@ -271,10 +271,12 @@ check_domain_status()
     elif [ "${TLDTYPE}" == "id" ]; 
     then
 	REGISTRAR=`${CAT} ${WHOIS_TMP} | ${AWK} -F: '/Sponsoring Registrar Organization:/ && $2 != ""  { REGISTRAR=substr($2,1,length($2)) } END { print REGISTRAR }'`
-
     elif [ "${TLDTYPE}" == "mk" ];
     then
         REGISTRAR=`${CAT} ${WHOIS_TMP} | ${AWK} '/registrant/ && $2 != ""  { REGISTRAR=substr($2,1,17) } END { print REGISTRAR }'`
+    elif [ "${TLDTYPE}" == "si" ];
+    then
+        REGISTRAR=`${CAT} ${WHOIS_TMP} | ${AWK} -F: '/registrar:/ && $2 != ""  { REGISTRAR=substr($2,2,17) } END { print REGISTRAR }'`
     fi
 
     # If the Registrar is NULL, then we didn't get any data
@@ -381,6 +383,14 @@ check_domain_status()
             #tmonth=$(getmonth ${tmon})
             tday=`echo ${tdomdate} | ${CUT} -d'-' -f1`
             DOMAINDATE=`echo $tday-$tmon-$tyear`
+    elif [ "${TLDTYPE}" == "si" ]; # expire:         2017-12-17
+    then
+            tdomdate=`${CAT} ${WHOIS_TMP} | ${AWK} '/expire:/ { print $2 }'`
+            tyear=`echo ${tdomdate} | ${CUT} -d'-' -f1`
+            tmon=`echo ${tdomdate} | ${CUT} -d'-' -f2`
+            tmonth=$(getmonthnum ${tmon})
+            tday=`echo ${tdomdate} | ${CUT} -d'-' -f3`
+            DOMAINDATE=`echo $tday-$tmonth-$tyear`
     else # .com, .edu, .net and may work with others	 
 	    DOMAINDATE=`${CAT} ${WHOIS_TMP} | ${AWK} '/Expiration/ { print $NF }'`	
     fi
