@@ -37,6 +37,7 @@
 #
 #set -x
 ZABBIX="FALSE"
+#ZABBIX="TRUE"
 
 # Whois server to use (cmdline: -s)
 WHOIS_SERVER="whois.internic.org"
@@ -179,14 +180,18 @@ check_domain_status()
 {
     # Save the domain since set will trip up the ordering
     DOMAIN=${1}
-    DOMAINFILE=${2}    
+    DOMAINFILE=${2}
     local REGISTRAR=""
     local WHOIS_TMP="${DOMAINFILE}.tmp"
 
-    TLDTYPE="`echo ${DOMAIN} | ${CUT} -d '.' -f3 | tr '[A-Z]' '[a-z]'`" 
+    if [ "`grep -o "[.]" <<<"${DOMAIN}" | wc -l`" -eq 2 ];
+    then TLDTYPE="`echo ${DOMAIN} | awk -F"." '{print $2"."$3}'`"
+    else
+        TLDTYPE="`echo ${DOMAIN} | ${CUT} -d '.' -f3 | tr '[A-Z]' '[a-z]'`"
+    fi
     if [ "${TLDTYPE}"  == "" ];
     then
-	    TLDTYPE="`echo ${DOMAIN} | ${CUT} -d '.' -f2 | tr '[A-Z]' '[a-z]'`" 
+        TLDTYPE="`echo ${DOMAIN} | ${CUT} -d '.' -f2 | tr '[A-Z]' '[a-z]'`"
     fi
 
     # Invoke whois to find the domain registrar and expiration date
@@ -198,7 +203,7 @@ check_domain_status()
     elif [ "${TLDTYPE}"  == "in" ]; # India
     then
         ${WHOIS} -h "whois.registry.in" "${1}" > ${WHOIS_TMP}
-    elif [ "${TLDTYPE}"  == "uk" ]; # United Kingdom  
+    elif [ "${TLDTYPE}"  == "uk" ]; # United Kingdom
     then
         ${WHOIS} -h "whois.nic.uk" "${1}" > ${WHOIS_TMP}
 
@@ -228,6 +233,9 @@ check_domain_status()
     elif [ "${TLDTYPE}"  == "pl" ]; # PL
     then
         ${WHOIS} -h "whois.dns.pl" "${1}" > ${WHOIS_TMP}
+    elif [ "${TLDTYPE}"  == "org.ru" -o "${TLDTYPE}"  == "net.ru" ]; # RU 3rd level org.ru, net.ru
+    then
+        ${WHOIS} -h "whois.nic.net.ru" "${1}" > ${WHOIS_TMP}
     else
 	${WHOIS} "${1}" > ${WHOIS_TMP}
     fi
@@ -262,7 +270,7 @@ check_domain_status()
     elif [ "${TLDTYPE}" == "pl" ];
     then
 	REGISTRAR=`${CAT} ${WHOIS_TMP} | ${AWK} '/REGISTRAR:/ && $0 != ""  { getline; REGISTRAR=substr($0,1,25) } END { print REGISTRAR }'`
-    elif [ "${TLDTYPE}" == "ru" -o "${TLDTYPE}" == "su" ];
+    elif [ "${TLDTYPE}" == "ru" -o "${TLDTYPE}" == "su" -o "${TLDTYPE}" == "org.ru" -o "${TLDTYPE}" == "net.ru" ];
     then
         REGISTRAR=`${CAT} ${WHOIS_TMP} | ${AWK} -F: '/registrar:/ && $2 != ""  { REGISTRAR=substr($2,6,17) } END { print REGISTRAR }'`
     elif [ "${TLDTYPE}" == "md" ];
@@ -359,7 +367,7 @@ check_domain_status()
             tmonth=$(getmonthnum ${tmon})
             tday=`echo ${tdomdate} | ${CUT} -d'.' -f3`
             DOMAINDATE=`echo $tday-$tmonth-$tyear`
-    elif [ "${TLDTYPE}" == "ru" -o "${TLDTYPE}" == "su" ]; # paid-till:   2017-07-20T08:14:01Z
+    elif [ "${TLDTYPE}" == "ru" -o "${TLDTYPE}" == "su" -o "${TLDTYPE}" == "org.ru" -o "${TLDTYPE}" == "net.ru" ]; # paid-till:   2017-07-20T08:14:01Z
     then
             tdomdate=`${CAT} ${WHOIS_TMP} | ${AWK} '/paid-till:/ { print $2 }' | cut -dT -f1`
             tyear=`echo ${tdomdate} | ${CUT} -d'-' -f1`
