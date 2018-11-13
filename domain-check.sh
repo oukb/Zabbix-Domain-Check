@@ -177,6 +177,7 @@ tolower()
 ##################################################################
 check_domain_status() 
 {
+    #set -x
     # Save the domain since set will trip up the ordering
     DOMAIN=${1}
     DOMAINFILE=${2}    
@@ -233,7 +234,7 @@ check_domain_status()
     fi
 
     # Parse out the expiration date and registrar -- uses the last registrar it finds
-    REGISTRAR=`${CAT} ${WHOIS_TMP} | ${AWK} -F: '/Registrar/ && $2 != ""  { REGISTRAR=substr($2,2,17) } END { print REGISTRAR }'`
+    REGISTRAR=`${CAT} ${WHOIS_TMP} | ${AWK} -F: '$1 ~ /Registrar$/ && $2 != ""  { REGISTRAR=substr($2,2,17) } END { print REGISTRAR }'`
 
     if [ "${TLDTYPE}" == "uk" ]; # for .uk domain
     then
@@ -262,6 +263,9 @@ check_domain_status()
     elif [ "${TLDTYPE}" == "pl" ];
     then
 	REGISTRAR=`${CAT} ${WHOIS_TMP} | ${AWK} '/REGISTRAR:/ && $0 != ""  { getline; REGISTRAR=substr($0,1,25) } END { print REGISTRAR }'`
+    elif [ "${TLDTYPE}" == "br" ];
+    then
+	REGISTRAR="registro.BR"
     fi
 
     # If the Registrar is NULL, then we didn't get any data
@@ -326,7 +330,15 @@ check_domain_status()
             tyear=`echo ${tdomdate} | ${CUT} -d'-' -f1`
             tmon=`echo ${tdomdate} | ${CUT} -d'-' -f2`
 	    tmonth=$(getmonthnum ${tmon})
-            tday=`echo ${tdomdate} | ${CUT} -d'-' -f3`
+            tday=`echo ${tdomdate} | ${CUT} -d'-' -f3 | ${CUT} -d'T' -f1`
+	    DOMAINDATE=`echo $tday-$tmonth-$tyear`
+    elif [ "${TLDTYPE}" == "com" -o "${TLDTYPE}" == "online" -o "${TLDTYPE}" == "digital" ]; # for .com 2016-09-07T12:15:11Z
+    then
+	    tdomdate=`${CAT} ${WHOIS_TMP} | ${AWK} -F: '/Registry Expiry Date/ { print $2 }'`
+            tyear=`echo ${tdomdate} | ${CUT} -d'-' -f1`
+            tmon=`echo ${tdomdate} | ${CUT} -d'-' -f2`
+	    tmonth=$(getmonthnum ${tmon})
+            tday=`echo ${tdomdate} | ${CUT} -d'-' -f3 | ${CUT} -d'T' -f1`
 	    DOMAINDATE=`echo $tday-$tmonth-$tyear`
     elif [ "${TLDTYPE}" == "pl" ]; # renewal date:          2016.09.10 11:38:59
     then
@@ -336,8 +348,18 @@ check_domain_status()
 	    tmonth=$(getmonthnum ${tmon})
             tday=`echo ${tdomdate} | ${CUT} -d'.' -f3`
 	    DOMAINDATE=`echo $tday-$tmonth-$tyear`
+    elif [ "${TLDTYPE}" == "br" ]; # renewal date: 20160912
+    then
+	    tdomdate=`${CAT} ${WHOIS_TMP} | ${AWK} '/expires/ { print $2 }'`
+            tyear=`echo ${tdomdate} | ${CUT} -c 1-4`
+            tmon=`echo ${tdomdate} | ${CUT} -c 5-6`
+	    tmonth=$(getmonthnum ${tmon})
+            tday=`echo ${tdomdate} | ${CUT} -c 7-8`
+	    DOMAINDATE=`echo $tday-$tmonth-$tyear`
+
     else # .com, .edu, .net and may work with others	 
-	    DOMAINDATE=`${CAT} ${WHOIS_TMP} | ${AWK} '/Expiration/ { print $NF }'`	
+	    #DOMAINDATE=`${CAT} ${WHOIS_TMP} | ${AWK} '/Expiration/ { print $NF }'`	
+	    DOMAINDATE=`${CAT} ${WHOIS_TMP} | ${AWK} '/Registry Expiry Date/ { print $NF }'`	
     fi
 
     #echo $DOMAINDATE # debug 
@@ -474,7 +496,8 @@ NOWJULIAN=$(date2julian ${MONTH#0} ${DAY#0} ${YEAR})
 # get domains list in modify order
 # get only domains modified older than one day
 
-${FIND} ${DOMAINDB} -type f -mtime +1 -printf '%T+ %p\n' | ${GREP} -v ".tmp$" | ${SORT} | ${AWK} '{print $2}' | \
+#${FIND} ${DOMAINDB} -type f -mtime +1 -printf '%T+ %p\n' | ${GREP} -v ".tmp$" | ${SORT} | ${AWK} '{print $2}' | \
+${FIND} ${DOMAINDB} -type f  -printf '%T+ %p\n' | ${GREP} -v ".tmp$" | ${SORT} | ${AWK} '{print $2}' | \
 while read DOMAINFILE
 do
 	DOMAIN=$(${BASENAME} $DOMAINFILE)
