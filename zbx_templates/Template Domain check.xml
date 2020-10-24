@@ -241,7 +241,7 @@
                             <type>0</type>
                         </trigger_prototype>
                         <trigger_prototype>
-                            <expression>{Template Domain Check:domain.registration.check[{#DOMAIN},Expires].last()}&lt;14</expression>
+                            <expression>{Template Domain Check:domain.registration.check[{#DOMAIN},DaysLeft].last()}&lt;14</expression>
                             <name>{#DOMAIN} expiring, {ITEM.VALUE1} days left</name>
                             <url/>
                             <status>0</status>
@@ -250,7 +250,7 @@
                             <type>0</type>
                         </trigger_prototype>
                         <trigger_prototype>
-                            <expression>{Template Domain Check:domain.registration.check[{#DOMAIN},Expires].last()}&lt;3</expression>
+                            <expression>{Template Domain Check:domain.registration.check[{#DOMAIN},DaysLeft].last()}&lt;3</expression>
                             <name>{#DOMAIN} expiring, {ITEM.VALUE1} days left</name>
                             <url/>
                             <status>0</status>
