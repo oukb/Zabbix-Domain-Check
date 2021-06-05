@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 # fail if any pipe fail and unset var
 #set -uo pipefail
@@ -271,7 +271,6 @@ check_domain_status()
     elif [ "${TLDTYPE}" == "pl" ];
     then
 	REGISTRAR=`${CAT} ${WHOIS_TMP} | ${AWK} '/REGISTRAR:/ && $0 != ""  { getline; REGISTRAR=substr($0,1,25) } END { print REGISTRAR }'`
-<<<<<<< HEAD
     elif [ "${TLDTYPE}" == "ru" -o "${TLDTYPE}" == "su" -o "${TLDTYPE}" == "org.ru" -o "${TLDTYPE}" == "net.ru" ];
     then
         REGISTRAR=`${CAT} ${WHOIS_TMP} | ${AWK} -F: '/registrar:/ && $2 != ""  { REGISTRAR=substr($2,6,17) } END { print REGISTRAR }'`
@@ -287,11 +286,9 @@ check_domain_status()
     elif [ "${TLDTYPE}" == "si" ];
     then
         REGISTRAR=`${CAT} ${WHOIS_TMP} | ${AWK} -F: '/registrar:/ && $2 != ""  { REGISTRAR=substr($2,2,17) } END { print REGISTRAR }'`
-=======
     elif [ "${TLDTYPE}" == "br" ];
     then
 	REGISTRAR="registro.BR"
->>>>>>> 04ff2c4f04fa1a65477191925200edb54d9abe5c
     fi
 
     # If the Registrar is NULL, then we didn't get any data
@@ -358,6 +355,8 @@ check_domain_status()
 	    tmonth=$(getmonthnum ${tmon})
             tday=`echo ${tdomdate} | ${CUT} -d'-' -f3 | ${CUT} -d'T' -f1`
 	    DOMAINDATE=`echo $tday-$tmonth-$tyear`
+<<<<<<< HEAD
+=======
     elif [ "${TLDTYPE}" == "com" -o "${TLDTYPE}" == "online" -o "${TLDTYPE}" == "digital" -o "${TLDTYPE}" == "dev" ]; # for .com 2016-09-07T12:15:11Z
     then
 	    tdomdate=`${CAT} ${WHOIS_TMP} | ${AWK} -F: '/Registry Expiry Date/ { print $2 }'`
@@ -366,6 +365,7 @@ check_domain_status()
 	    tmonth=$(getmonthnum ${tmon})
             tday=`echo ${tdomdate} | ${CUT} -d'-' -f3 | ${CUT} -d'T' -f1`
 	    DOMAINDATE=`echo $tday-$tmonth-$tyear`
+>>>>>>> c28209de168c176014d90be9fa526444ec4d6237
     elif [ "${TLDTYPE}" == "pl" ]; # renewal date:          2016.09.10 11:38:59
     then
 	    tdomdate=`${CAT} ${WHOIS_TMP} | ${AWK} '/renewal date:/ { print $3 }'`
@@ -374,7 +374,6 @@ check_domain_status()
 	    tmonth=$(getmonthnum ${tmon})
             tday=`echo ${tdomdate} | ${CUT} -d'.' -f3`
 	    DOMAINDATE=`echo $tday-$tmonth-$tyear`
-<<<<<<< HEAD
     elif [ "${TLDTYPE}" == "pl" ]; # paid-till:     2017.04.02
     then
             tdomdate=`${CAT} ${WHOIS_TMP} | ${AWK} '/paid-till:/ { print $2 }'`
@@ -403,10 +402,9 @@ check_domain_status()
     then
             tdomdate=`${CAT} ${WHOIS_TMP} | ${AWK} '/Expiration Date:/ { s=substr($2,6,length($2)) } END {print s}' | tr 'A-Z' 'a-z'`
             tyear=`echo ${tdomdate} | ${CUT} -d'-' -f3`
-            tmon=`echo ${tdomdate} | ${CUT} -d'-' -f2`
-            #tmonth=$(getmonth ${tmon})
+            tmonth=`echo ${tdomdate} | ${CUT} -d'-' -f2`
             tday=`echo ${tdomdate} | ${CUT} -d'-' -f1`
-            DOMAINDATE=`echo $tday-$tmon-$tyear`
+            DOMAINDATE=`echo $tday-$tmonth-$tyear`
     elif [ "${TLDTYPE}" == "si" ]; # expire:         2017-12-17
     then
             tdomdate=`${CAT} ${WHOIS_TMP} | ${AWK} '/expire:/ { print $2 }'`
@@ -415,20 +413,24 @@ check_domain_status()
             tmonth=$(getmonthnum ${tmon})
             tday=`echo ${tdomdate} | ${CUT} -d'-' -f3`
             DOMAINDATE=`echo $tday-$tmonth-$tyear`
-=======
     elif [ "${TLDTYPE}" == "br" ]; # renewal date: 20160912
     then
-	    tdomdate=`${CAT} ${WHOIS_TMP} | ${AWK} '/expires/ { print $2 }'`
+            tdomdate=`${CAT} ${WHOIS_TMP} | ${AWK} '/expires/ { print $2 }'`
             tyear=`echo ${tdomdate} | ${CUT} -c 1-4`
             tmon=`echo ${tdomdate} | ${CUT} -c 5-6`
-	    tmonth=$(getmonthnum ${tmon})
+            tmonth=$(getmonthnum ${tmon})
             tday=`echo ${tdomdate} | ${CUT} -c 7-8`
-	    DOMAINDATE=`echo $tday-$tmonth-$tyear`
-
->>>>>>> 04ff2c4f04fa1a65477191925200edb54d9abe5c
-    else # .com, .edu, .net and may work with others	 
-	    #DOMAINDATE=`${CAT} ${WHOIS_TMP} | ${AWK} '/Expiration/ { print $NF }'`	
-	    DOMAINDATE=`${CAT} ${WHOIS_TMP} | ${AWK} '/Registry Expiry Date/ { print $NF }'`	
+            DOMAINDATE=`echo $tday-$tmonth-$tyear`
+#    else # .com, .edu, .net and may work with others
+#            #DOMAINDATE=`${CAT} ${WHOIS_TMP} | ${AWK} '/Expiration/ { print $NF }'`
+#            DOMAINDATE=`${CAT} ${WHOIS_TMP} | ${AWK} '/Registry Expiry Date/ { print $NF }'`
+    else # for .com, .net, .org and many other domains 2016-09-07T12:15:11Z
+            tdomdate=`${CAT} ${WHOIS_TMP} | ${AWK} -F: '/Registry Expiry Date/ { print $2 }'`
+            tyear=`echo ${tdomdate} | ${CUT} -d'-' -f1`
+            tmon=`echo ${tdomdate} | ${CUT} -d'-' -f2`
+            tmonth=$(getmonthnum ${tmon})
+            tday=`echo ${tdomdate} | ${CUT} -d'-' -f3 | ${CUT} -d'T' -f1`
+            DOMAINDATE=`echo $tday-$tmonth-$tyear`
     fi
 
     #echo $DOMAINDATE # debug 
