@@ -355,17 +355,6 @@ check_domain_status()
 	    tmonth=$(getmonthnum ${tmon})
             tday=`echo ${tdomdate} | ${CUT} -d'-' -f3 | ${CUT} -d'T' -f1`
 	    DOMAINDATE=`echo $tday-$tmonth-$tyear`
-<<<<<<< HEAD
-=======
-    elif [ "${TLDTYPE}" == "com" -o "${TLDTYPE}" == "online" -o "${TLDTYPE}" == "digital" -o "${TLDTYPE}" == "dev" ]; # for .com 2016-09-07T12:15:11Z
-    then
-	    tdomdate=`${CAT} ${WHOIS_TMP} | ${AWK} -F: '/Registry Expiry Date/ { print $2 }'`
-            tyear=`echo ${tdomdate} | ${CUT} -d'-' -f1`
-            tmon=`echo ${tdomdate} | ${CUT} -d'-' -f2`
-	    tmonth=$(getmonthnum ${tmon})
-            tday=`echo ${tdomdate} | ${CUT} -d'-' -f3 | ${CUT} -d'T' -f1`
-	    DOMAINDATE=`echo $tday-$tmonth-$tyear`
->>>>>>> c28209de168c176014d90be9fa526444ec4d6237
     elif [ "${TLDTYPE}" == "pl" ]; # renewal date:          2016.09.10 11:38:59
     then
 	    tdomdate=`${CAT} ${WHOIS_TMP} | ${AWK} '/renewal date:/ { print $3 }'`
